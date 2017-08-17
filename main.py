@@ -23,18 +23,18 @@ def load_vgg(sess, vgg_path):
     :return: Tuple of Tensors from VGG model (image_input, keep_prob, layer3_out, layer4_out, layer7_out)
     """
     with sess.as_default():
-		vgg_tag = 'vgg16'
+        vgg_tag = 'vgg16'
 		
-		# Use tf.saved_model.loader.load to load the model and weights
-		model_vgg = tf.saved_model.loader.load(sess,[vgg_tag],vgg_path)
+        # Use tf.saved_model.loader.load to load the model and weights
+        model_vgg = tf.saved_model.loader.load(sess,[vgg_tag],vgg_path)
 		
-		vgg_input_tensor_name      = tf.get_default_graph().get_tensor_by_name('image_input:0')
-		vgg_keep_prob_tensor_name  = tf.get_default_graph().get_tensor_by_name('keep_prob:0')
-		vgg_layer3_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer3_out:0')
-		vgg_layer4_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer4_out:0')
-		vgg_layer7_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer7_out:0')
+        vgg_input_tensor_name      = tf.get_default_graph().get_tensor_by_name('image_input:0')
+        vgg_keep_prob_tensor_name  = tf.get_default_graph().get_tensor_by_name('keep_prob:0')
+        vgg_layer3_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer3_out:0')
+        vgg_layer4_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer4_out:0')
+        vgg_layer7_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer7_out:0')
     
-	return vgg_input_tensor_name, vgg_keep_prob_tensor_name, vgg_layer3_out_tensor_name, vgg_layer4_out_tensor_name, vgg_layer7_out_tensor_name
+    return vgg_input_tensor_name, vgg_keep_prob_tensor_name, vgg_layer3_out_tensor_name, vgg_layer4_out_tensor_name, vgg_layer7_out_tensor_name
 	
 tests.test_load_vgg(load_vgg, tf)
 
@@ -48,16 +48,16 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
 	
-	# Build Fully Convolutional Network (FCN)
+    # Build Fully Convolutional Network (FCN)
 	
-	###########VGG is "Encoder" portion of FCN##########
+    ###########VGG is "Encoder" portion of FCN##########
     
-	#1x1 Convolutions applied to VGG layers
+    #1x1 Convolutions applied to VGG layers
     layer7_conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding = 'SAME',  kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
-	layer4_conv_1x1 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding = 'SAME',  kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
-	layer3_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding = 'SAME',  kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
+    layer4_conv_1x1 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding = 'SAME',  kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
+    layer3_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding = 'SAME',  kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
 	
-	###########Decoder###########
+    ###########Decoder###########
 		
     # Transposed Convolutional Layer applied to (VGG Layer 7 + 1x1 Conv): Upsample, kernel (4 x 4) and Stride (2 x 2)
     layer7_tconv = tf.layers.conv2d_transpose(layer7_conv_1x1, num_classes, 4, strides = (2, 2), padding = 'SAME', kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
@@ -66,13 +66,13 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     skip_layer_l7t_l4 = tf.add(layer4_conv_1x1,layer7_tconv)
 
     # Transposed Convolutional Layer applied to skip layer: Upsample, kernel (4 x 4) and Stride (2 x 2)
-    layer4_tconv = tf.layers.conv2d_transpose(skip_layer1, num_classes, 4, strides = (2, 2), padding='SAME', kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
+    layer4_tconv = tf.layers.conv2d_transpose(skip_layer_l7t_l4, num_classes, 4, strides = (2, 2), padding='SAME', kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
 	
-	# Apply Skip layer connecting transposed convolutional layer 4 and (VGG Layer 3 + 1x1 Conv)
+    # Apply Skip layer connecting transposed convolutional layer 4 and (VGG Layer 3 + 1x1 Conv)
     skip_layer_l4t_l3 = tf.add(layer3_conv_1x1, layer4_tconv)
 
     # Transposed Convolutional Layer applied to skip layer: Upsample, kernel (16 x 16) and Stride (8 x 8)
-    output_layer = tf.layers.conv2d_transpose(skip_layer2, num_classes, 16, strides = (8, 8), padding='SAME', kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
+    output_layer = tf.layers.conv2d_transpose(skip_layer_l4t_l3, num_classes, 16, strides = (8, 8), padding='SAME', kernel_initializer=tf.truncated_normal_initializer(stddev=0.001))
 
     return output_layer
 tests.test_layers(layers)

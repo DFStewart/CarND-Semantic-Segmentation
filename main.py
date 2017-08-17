@@ -25,7 +25,7 @@ def load_vgg(sess, vgg_path):
     with sess.as_default():
 		vgg_tag = 'vgg16'
 		
-		#   Use tf.saved_model.loader.load to load the model and weights
+		# Use tf.saved_model.loader.load to load the model and weights
 		model_vgg = tf.saved_model.loader.load(sess,[vgg_tag],vgg_path)
 		
 		vgg_input_tensor_name      = tf.get_default_graph().get_tensor_by_name('image_input:0')
@@ -34,7 +34,7 @@ def load_vgg(sess, vgg_path):
 		vgg_layer4_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer4_out:0')
 		vgg_layer7_out_tensor_name = tf.get_default_graph().get_tensor_by_name('layer7_out:0')
     
-    return vgg_input_tensor_name, vgg_keep_prob_tensor_name, vgg_layer3_out_tensor_name, vgg_layer4_out_tensor_name, vgg_layer7_out_tensor_name
+	return vgg_input_tensor_name, vgg_keep_prob_tensor_name, vgg_layer3_out_tensor_name, vgg_layer4_out_tensor_name, vgg_layer7_out_tensor_name
 	
 tests.test_load_vgg(load_vgg, tf)
 

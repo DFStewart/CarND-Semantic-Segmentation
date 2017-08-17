@@ -86,15 +86,15 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-	# Set size of logits
-	logits = tf.reshape(nn_last_layer, (-1, num_classes))
-	# Set size of labels
-	labels = tf.reshape(correct_label, (-1, num_classes))
-	# Compute cross entropy loss
-	softmax_function   = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
-	cross_entropy_loss = tf.reduce_mean(softmax_function)
-	# Setup training operations
-	train_op           = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss);
+    # Set size of logits
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    # Set size of labels
+    labels = tf.reshape(correct_label, (-1, num_classes))
+    # Compute cross entropy loss
+    softmax_function   = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
+    cross_entropy_loss = tf.reduce_mean(softmax_function)
+    # Setup training operations
+    train_op           = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss);
 	
     return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
@@ -114,15 +114,15 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-	#Hyper parameters
-	keep_probability = 0.65 #0.70 # 0.5
-	learn_rate       = 1e-3 #1e-4 # 0.001
+    #Hyper parameters
+    keep_probability = 0.65 #0.70 # 0.5
+    learn_rate       = 1e-3 #1e-4 # 0.001
 	
     for epoch_idx in range(epochs):
-		for img_idx, img_lbl_idx in get_batches_fn(batch_size):
-			_,loss = sess.run([train_op,cross_entropy_loss], feed_dict = {input_image: img_idx, correct_label: img_lbl_idx, keep_prob: keep_probability, learning_rate:learn_rate})
+        for img_idx, img_lbl_idx in get_batches_fn(batch_size):
+            _,loss = sess.run([train_op,cross_entropy_loss], feed_dict = {input_image: img_idx, correct_label: img_lbl_idx, keep_prob: keep_probability, learning_rate:learn_rate})
             print("Current Epoch: {} ".format(epoch_idx+1), "/{} -".format(epochs))
-			print("Loss: {:.6f}".format(loss))
+            print("Loss: {:.6f}".format(loss))
 tests.test_train_nn(train_nn)
 
 def run():
@@ -132,9 +132,9 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
 	
-	#Hyper Parameters
-	epochs     = 37 #45 #10
-	batch_size = 17 #20 #16
+    #Hyper Parameters
+    epochs     = 37 #45 #10
+    batch_size = 17 #20 #16
 
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
@@ -153,23 +153,23 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # Build NN using load_vgg, layers, and optimize function
-		input_image, keep_prob, vgg_layer_3, vgg_layer_4, vgg_layer_7 = load_vgg(sess, vgg_path)
+        input_image, keep_prob, vgg_layer_3, vgg_layer_4, vgg_layer_7 = load_vgg(sess, vgg_path)
 		
-		decoder_last_layer = layers(vgg_layer_3, vgg_layer_4, vgg_layer_7, num_classes)
+        decoder_last_layer = layers(vgg_layer_3, vgg_layer_4, vgg_layer_7, num_classes)
 		
         correct_label = tf.placeholder(dtype=tf.float32, shape=(None, None, None, num_classes))
 		
         learning_rate = tf.placeholder(dtype=tf.float32)
 		
-		logits, train_op, cross_entropy_loss = optimize(decoder_last_layer, correct_label, learning_rate, num_classes)
+        logits, train_op, cross_entropy_loss = optimize(decoder_last_layer, correct_label, learning_rate, num_classes)
 
         # Train NN using the train_nn function
-		sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer())
         train_nn(sess, epochs, batch_size, get_batches_fn, training_operation, cross_entropy_loss, image_input,correct_label, keep_prob, learning_rate)
 
         # Save inference data using helper.save_inference_samples
-		helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
-		saver = tf.train.Saver()
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        saver = tf.train.Saver()
         saver.save(sess, 'FCN_Model')
         print("FCN Model Successfully Saved")
 		

@@ -94,7 +94,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     softmax_function   = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     cross_entropy_loss = tf.reduce_mean(softmax_function)
     # Setup training operations
-    train_op           = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss);
+    train_op           = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
 	
     return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
@@ -115,8 +115,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     #Hyper parameters
-    keep_probability = 0.65 #0.70 # 0.5
-    learn_rate       = 1e-3 #1e-4 # 0.001
+    keep_probability = 0.65
+    learn_rate       = 1e-3
 	
     for epoch_idx in range(epochs):
         for img_idx, img_lbl_idx in get_batches_fn(batch_size):
@@ -133,8 +133,8 @@ def run():
     tests.test_for_kitti_dataset(data_dir)
 	
     #Hyper Parameters
-    epochs     = 37 #45 #10
-    batch_size = 17 #20 #16
+    epochs     = 37
+    batch_size = 17
 
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
